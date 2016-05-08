@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+LOG_PATH=$CURRENT_DIR/../fingers.log
+
 source $CURRENT_DIR/config.sh
 source $CURRENT_DIR/actions.sh
+source $CURRENT_DIR/debug.sh
+
 source $CURRENT_DIR/hints.sh
 source $CURRENT_DIR/utils.sh
 
@@ -13,11 +17,6 @@ fingers_pane_id=$2
 tmp_path=$3
 
 BACKSPACE=$'\177'
-
-function clear_screen() {
-  clear
-  tmux clearhist -t "$fingers_pane_id"
-}
 
 function has_capitals() {
   echo "$1" | grep -c "[A-Z]"
@@ -37,7 +36,6 @@ function zoom_pane() {
   tmux resize-pane -Z -t "$pane_id"
 }
 
-clear_screen
 print_hints
 pane_was_zoomed=$(is_pane_zoomed "$current_pane_id")
 tmux swap-pane -s "$current_pane_id" -t "$fingers_pane_id"

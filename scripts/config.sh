@@ -2,6 +2,7 @@
 
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+# TODO empty patterns are invalid
 function check_pattern() {
   echo "beep beep" | grep -e "$1" 2> /dev/null
 

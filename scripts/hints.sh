@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+sourcing_before_ms=$(current_ms)
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 MATCH_PARSER="\([0-9]*\):\(.*\)"
@@ -17,6 +18,11 @@ function highlight() {
   printf "\033[1;33m%s\033[0m" "$1"
 }
 
+function clear_screen() {
+  clear
+  tmux clearhist
+}
+
 function lookup_match() {
   local input=$1
   echo ${match_lookup_table[$input]}
@@ -31,38 +37,36 @@ do
 done < /dev/stdin
 IFS=$OLDIFS
 
-# POSIX grep does linenumber on every line with both -o and -n flags set
-normalize_grep_output='
-BEGIN {
-  previous_line_no = 0;
-}
-{
-  if ( $0 ~ /^[0-9]+:/ ) {
-    split($0, split_at_colon, ":")
-    previous_line_no = split_at_colon[1]
-    print $0
-  } else {
-    printf "%d:%s\n", previous_line_no, $0
-  }
-}
-'
-matches=$(echo -e $lines | (grep -oniE "$PATTERNS" 2> /dev/null) | awk $normalize_grep_output | sort -u)
+# geirha #awk
+# P='\..' awk '{ s = $0; pos = 0; while (match(s, ENVIRON["P"])) { print pos += RSTART, substr(s, RSTART, RLENGTH); s = substr(s, 
+# RSTART+RLENGTH-1); } }'
+
+matches=$(echo -ne $lines | FINGER_PATTERNS=$PATTERNS awk '{ s=$0; while (n = match(s, ENVIRON["P"])) { print substr(s, RSTART, RLENGTH); s = substr(s, RSTART+RLENGTH-1); } }'
 output="$lines"
-i=0
-
-OLDIFS=$IFS
-IFS=$(echo -en "\n\b") # wtf bash?
-for match in $matches ; do
-  hint=$(get_hint $i)
-  linenumber=$(echo $match | sed "s!${MATCH_PARSER//!\\!}!\1!")
-  text=$(echo $match | sed "s!${MATCH_PARSER//!\\!}!\2!")
-
-  output=$(echo -ne "$output" | sed "${linenumber}s!${text//!/\\!}!$(highlight ${text//!/\\!}) $(highlight "[${hint//!/\\!}]")!g")
-  match_lookup_table[$hint]=$text
-  i=$((i + 1))
-done
-IFS=$OLDIFS
+echo -ne "$matches" > $CURRENT_DIR/../matches.log
 
 function print_hints() {
   echo -ne "$output"
 }
+
+log "match count: ${#matches}"
+log "matches[2]: ${matches[2]}"
+
+for i in $(seq 0 $((${#matches} / 3 - 1))) ; do
+  linenumber=${matches[$i]}
+  colnumber=${matches[$((i + 1))]}
+  match=${matches[$((i + 2))]}
+
+  log "i:       $i"
+  #log "line no: $linenumber"
+  #log "col no:  $colnumber"
+  #log "match:   $match"
+
+  #hint=$(get_hint $i)
+  #linenumber=$(echo $match | sed "s/$MATCH_PARSER/\1/")
+  #text=$(echo $match | sed "s/$MATCH_PARSER/\2/")
+  #output=$(echo -ne "$output" | sed "${linenumber}s!${text//!/\\!}!$(highlight ${text//!/\\!}) $(highlight "[${hint//!/\\!}]")!g")
+  #match_lookup_table[$hint]=$text
+
+  #clear_screen
+done
