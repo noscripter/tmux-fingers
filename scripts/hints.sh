@@ -18,6 +18,15 @@ function highlight() {
   printf "\033[1;33m%s\033[0m" "$1"
 }
 
+function tput_hint() {
+  local text=$1
+  local hint=$2
+  local linenumber=$3
+  local colnumber=$4
+
+  echo "$(tput cup $linenumber $colnumber)$(tput setaf 3)$(tput bold)$text [$hint]$(tput sgr0)"
+}
+
 function clear_screen() {
   clear
   tmux clearhist
@@ -29,44 +38,44 @@ function lookup_match() {
 }
 
 lines=''
-OLDIFS=$IFS
-IFS=
+OLDIFS="$IFS"
+
+IFS=''
 while read -r line
 do
   lines+="$line\n"
 done < /dev/stdin
-IFS=$OLDIFS
+IFS="$OLDIFS"
 
-# geirha #awk
-# P='\..' awk '{ s = $0; pos = 0; while (match(s, ENVIRON["P"])) { print pos += RSTART, substr(s, RSTART, RLENGTH); s = substr(s, 
-# RSTART+RLENGTH-1); } }'
+IFS=$'\n'
+matches=($(echo -ne $lines | FINGER_PATTERNS=$PATTERNS awk -f $CURRENT_DIR/search.awk))
+IFS="$OLDIFS"
 
-matches=$(echo -ne $lines | FINGER_PATTERNS=$PATTERNS awk '{ s=$0; while (n = match(s, ENVIRON["P"])) { print substr(s, RSTART, RLENGTH); s = substr(s, RSTART+RLENGTH-1); } }'
 output="$lines"
-echo -ne "$matches" > $CURRENT_DIR/../matches.log
 
-function print_hints() {
-  echo -ne "$output"
-}
+match_count=$((${#matches[@]} / 3 - 1))
 
-log "match count: ${#matches}"
-log "matches[2]: ${matches[2]}"
+clear_screen
+printf "%b" "${output::-2}"
+#echo -ne $output
+#echo -ne $output >> $CURRENT_DIR/../wtf.log
 
-for i in $(seq 0 $((${#matches} / 3 - 1))) ; do
-  linenumber=${matches[$i]}
-  colnumber=${matches[$((i + 1))]}
-  match=${matches[$((i + 2))]}
+i=0
+while [[ $i -lt $match_count ]]; do
+  match_index=$((i * 3))
+  linenumber=${matches[$match_index]}
+  colnumber=${matches[$((match_index + 1))]}
+  match=${matches[$((match_index + 2))]}
+	hint=$(get_hint $i)
 
   log "i:       $i"
-  #log "line no: $linenumber"
-  #log "col no:  $colnumber"
-  #log "match:   $match"
+  log "line no: $linenumber"
+  log "col no:  $colnumber"
+  log "match:   $match"
 
-  #hint=$(get_hint $i)
-  #linenumber=$(echo $match | sed "s/$MATCH_PARSER/\1/")
-  #text=$(echo $match | sed "s/$MATCH_PARSER/\2/")
-  #output=$(echo -ne "$output" | sed "${linenumber}s!${text//!/\\!}!$(highlight ${text//!/\\!}) $(highlight "[${hint//!/\\!}]")!g")
-  #match_lookup_table[$hint]=$text
+	tput_hint $match $hint $((linenumber - 1)) $((colnumber - 1))
 
-  #clear_screen
+	match_lookup_table[$hint]=$text
+
+  i=$((i + 1))
 done
