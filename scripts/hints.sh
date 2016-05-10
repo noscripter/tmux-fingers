@@ -55,27 +55,36 @@ output="$lines"
 
 match_count=$((${#matches[@]} / 3 - 1))
 
-clear_screen
-printf "%b" "${output::-2}"
 #echo -ne $output
 #echo -ne $output >> $CURRENT_DIR/../wtf.log
 
-i=0
-while [[ $i -lt $match_count ]]; do
-  match_index=$((i * 3))
-  linenumber=${matches[$match_index]}
-  colnumber=${matches[$((match_index + 1))]}
-  match=${matches[$((match_index + 2))]}
-	hint=$(get_hint $i)
+function scan_hints() {
+  local current_pane_id=$1
+  local fingers_pane_id=$2
 
-  log "i:       $i"
-  log "line no: $linenumber"
-  log "col no:  $colnumber"
-  log "match:   $match"
+  clear_screen
+  printf "%b" "${output::-2}"
+  i=0
 
-	tput_hint $match $hint $((linenumber - 1)) $((colnumber - 1))
+  tmux swap-pane -s "$current_pane_id" -t "$fingers_pane_id"
 
-	match_lookup_table[$hint]=$text
+  while [[ $i -lt $match_count ]]; do
+    match_index=$((i * 3))
+    linenumber=${matches[$match_index]}
+    colnumber=${matches[$((match_index + 1))]}
+    match=${matches[$((match_index + 2))]}
+    hint=$(get_hint $i)
 
-  i=$((i + 1))
-done
+    log "i:       $i"
+    log "line no: $linenumber"
+    log "col no:  $colnumber"
+    log "match:   $match"
+
+    tput_hint $match $hint $((linenumber - 1)) $((colnumber - 1))
+
+    match_lookup_table[$hint]=$text
+
+    i=$((i + 1))
+  done
+}
+

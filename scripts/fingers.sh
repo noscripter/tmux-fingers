@@ -96,7 +96,14 @@ function is_valid_input() {
   echo $is_valid
 }
 
+function hide_cursor() {
+  echo $(tput civis)
+}
+
 trap "handle_exit" EXIT
+
+hide_cursor
+scan_hints $current_pane_id $fingers_pane_id
 
 input=''
 
