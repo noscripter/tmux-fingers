@@ -112,12 +112,12 @@ BEGIN {
   HINTS[97] = "ad"
   HINTS[98] = "as"
   HINTS[99] = "aa"
+
+  finger_patterns = ENVIRON["FINGER_PATTERNS"];
 }
 {
 
   line = $0;
-  #finger_patterns = ENVIRON["FINGER_PATTERNS"];
-  finger_patterns = "([0-9a-f]{7}|[0-9a-f]{40})|([[:digit:]]{4,})"
   pos = 0;
   col_pos = 0;
 	corrected_col_pos = 0;
@@ -163,5 +163,5 @@ BEGIN {
     printf hint ":" line_match "\n" | "cat 1>&3"
   }
 
-  print output_line
+  printf "\n%s", output_line
 }
