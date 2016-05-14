@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-sourcing_before_ms=$(current_ms)
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source $CURRENT_DIR/debug.sh
 
 MATCH_PARSER="\([0-9]*\):\(.*\)"
 
@@ -47,6 +47,8 @@ do
 done < /dev/stdin
 IFS="$OLDIFS"
 
+log $PATTERNS;
+
 IFS=$'\n'
 matches=($(echo -ne $lines | FINGER_PATTERNS=$PATTERNS awk -f $CURRENT_DIR/search.awk))
 IFS="$OLDIFS"
@@ -54,9 +56,6 @@ IFS="$OLDIFS"
 output="$lines"
 
 match_count=$((${#matches[@]} / 3 - 1))
-
-#echo -ne $output
-#echo -ne $output >> $CURRENT_DIR/../wtf.log
 
 function scan_hints() {
   local current_pane_id=$1
@@ -75,11 +74,6 @@ function scan_hints() {
     match=${matches[$((match_index + 2))]}
     hint=$(get_hint $i)
 
-    log "i:       $i"
-    log "line no: $linenumber"
-    log "col no:  $colnumber"
-    log "match:   $match"
-
     tput_hint $match $hint $((linenumber - 1)) $((colnumber - 1))
 
     match_lookup_table[$hint]=$text
@@ -87,4 +81,3 @@ function scan_hints() {
     i=$((i + 1))
   done
 }
-
