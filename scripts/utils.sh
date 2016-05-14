@@ -80,3 +80,9 @@ function pane_exec() {
   tmux send-keys -t $pane_id " $pane_command"
   tmux send-keys -t $pane_id Enter
 }
+
+function fingers_tmp() {
+  local tmp_path=$(mktemp "${TMPDIR:-/tmp}/tmux-fingers.XXXXXXXX")
+  chmod 600 "$tmp_path"
+  echo "$tmp_path"
+}

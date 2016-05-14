@@ -2,82 +2,26 @@
 
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source $CURRENT_DIR/debug.sh
+source $CURRENT_DIR/utils.sh
 
-MATCH_PARSER="\([0-9]*\):\(.*\)"
-
-HINTS=(p o i u l k j t r e wj wt wr we ww wq wf wd ws wa qp qo qi qu ql qk qj qt qr qe qw qq qf qd qs qa fp fo fi fu fl fk fj ft fr fe fw fq ff fd fs fa dp do di du dl dk dj dt dr de dw dq df dd ds da sp so si su sl sk sj st sr se sw sq sf sd ss sa ap ao ai au al ak aj at ar ae aw aq af ad as aa)
 match_lookup_table=''
 
-declare -A match_lookup_table
-
-function get_hint() {
-  echo "${HINTS[$1]}"
-}
-
-function highlight() {
-  printf "\033[1;33m%s\033[0m" "$1"
-}
-
-function tput_hint() {
-  local text=$1
-  local hint=$2
-  local linenumber=$3
-  local colnumber=$4
-
-  echo "$(tput cup $linenumber $colnumber)$(tput setaf 3)$(tput bold)$text [$hint]$(tput sgr0)"
-}
-
 function clear_screen() {
+  local fingers_pane_id=$1
+  tmux clearhist -t $fingers_pane_id
   clear
-  tmux clearhist
 }
 
 function lookup_match() {
   local input=$1
-  echo ${match_lookup_table[$input]}
+  echo "$(cat $match_lookup_table | grep "^$input:" | sed "s/^$input://")"
 }
 
-lines=''
-OLDIFS="$IFS"
-
-IFS=''
-while read -r line
-do
-  lines+="$line\n"
-done < /dev/stdin
-IFS="$OLDIFS"
-
-log $PATTERNS;
-
-IFS=$'\n'
-matches=($(echo -ne $lines | FINGER_PATTERNS=$PATTERNS awk -f $CURRENT_DIR/search.awk))
-IFS="$OLDIFS"
-
-output="$lines"
-
-match_count=$((${#matches[@]} / 3 - 1))
-
-function scan_hints() {
-  local current_pane_id=$1
-  local fingers_pane_id=$2
-
-  clear_screen
-  printf "%b" "${output::-2}"
-  i=0
-
+function show_hints_and_swap() {
+  current_pane_id=$1
+  fingers_pane_id=$2
+  match_lookup_table=$(fingers_tmp)
+  clear_screen "$fingers_pane_id"
   tmux swap-pane -s "$current_pane_id" -t "$fingers_pane_id"
-
-  while [[ $i -lt $match_count ]]; do
-    match_index=$((i * 3))
-    linenumber=${matches[$match_index]}
-    colnumber=${matches[$((match_index + 1))]}
-    match=${matches[$((match_index + 2))]}
-    hint=$(get_hint $i)
-
-    tput_hint $match $hint $((linenumber - 1)) $((colnumber - 1))
-
-    match_lookup_table[$hint]=$text
-
-    i=$((i + 1))
-  done
+  cat | FINGER_PATTERNS=$PATTERNS awk -f $CURRENT_DIR/search.awk 3> $match_lookup_table
 }

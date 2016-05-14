@@ -103,7 +103,7 @@ function hide_cursor() {
 trap "handle_exit" EXIT
 
 hide_cursor
-scan_hints $current_pane_id $fingers_pane_id
+show_hints_and_swap $current_pane_id $fingers_pane_id
 
 input=''
 

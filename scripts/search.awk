@@ -112,7 +112,6 @@ BEGIN {
   HINTS[97] = "ad"
   HINTS[98] = "as"
   HINTS[99] = "aa"
-
 }
 {
 
@@ -123,12 +122,13 @@ BEGIN {
   col_pos = 0;
 	corrected_col_pos = 0;
 	n_matches_in_line = 0;
-	hint_format = " [%s] "
-	#hint_format = " [\033[1;33m%s\033[0m]"
+	#hint_format = " [%s] "
+	hint_format = " \033[1;33m[%s]\033[0m"
 	hint_len_small = length(hint_format) - 1
 	hint_len_big = length(hint_format)
-	highlight_format = "%s"
-	#highlight_format = "\033[1;33m%s\033[0m"
+	#highlight_format = "%s"
+	highlight_format = "\033[1;33m%s\033[0m"
+	magic_number = 12;
 
 	output_line = line;
 
@@ -136,6 +136,7 @@ BEGIN {
     n_matches += 1;
 		n_matches_in_line += 1;
 
+		hint = HINTS[n_matches - 1]
     pos += RSTART;
 
     col_pos = pos;
@@ -143,7 +144,7 @@ BEGIN {
 
     if (n_matches_in_line > 1) {
 			# TODO does not work with more than 2 matches, corrected_col_pos needs to be accumulated
-			corrected_col_pos = col_pos + (n_matches > 10 ? hint_len_big : hint_len_small) + 1;
+			corrected_col_pos = col_pos + (n_matches > 10 ? hint_len_big : hint_len_small) + magic_number;
     } else {
       corrected_col_pos = col_pos;
     }
@@ -151,14 +152,16 @@ BEGIN {
     line_pos = NR;
 
 		pre_match = substr(output_line, 0, corrected_col_pos - 1)
-		hint_match = sprintf(highlight_format hint_format, line_match, HINTS[n_matches - 1])
+		hint_match = sprintf(highlight_format hint_format, line_match, hint)
 
 		post_match = substr(output_line, corrected_col_pos + RLENGTH + 1, length(line) - 1)
 
     output_line = pre_match hint_match post_match
 
     line = substr(line, RSTART + RLENGTH - 1);
+
+    printf hint ":" line_match "\n" | "cat 1>&3"
   }
 
-	print output_line
+  print output_line
 }
