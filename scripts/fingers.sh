@@ -103,7 +103,7 @@ function hide_cursor() {
 trap "handle_exit" EXIT
 
 show_hints_and_swap $current_pane_id $fingers_pane_id
-log "end $(current_ms)"
+#log "end $(current_ms)"
 
 input=''
 

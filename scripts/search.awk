@@ -6,11 +6,14 @@ function repeat_char(char, times) {
 	return output;
 }
 
+function fingers_log(msg) {
+  print msg | "cat 1>&2"
+}
+
 BEGIN {
   n_matches = 0;
   line_pos = 0;
   col_pos = 0;
-  col_correction = 0;
 
   HINTS[0] = "p"
   HINTS[1] = "o"
@@ -115,26 +118,30 @@ BEGIN {
 
   finger_patterns = ENVIRON["FINGER_PATTERNS"];
 }
+
 {
 
   line = $0;
   pos = 0;
   col_pos = 0;
-	corrected_col_pos = 0;
-	n_matches_in_line = 0;
-	#hint_format = " [%s] "
-	hint_format = " \033[1;33m[%s]\033[0m"
-	hint_len_small = length(hint_format) - 1
-	hint_len_big = length(hint_format)
-	#highlight_format = "%s"
-	highlight_format = "\033[1;33m%s\033[0m"
-	magic_number = 12;
+	col_pos_correction = 0;
+
+  hint_format = " [%s] "
+  #hint_format = " \033[1;33m[%s]\033[0m"
+
+  highlight_format = "%s"
+  #highlight_format = "\033[1;33m%s\033[0m"
 
 	output_line = line;
 
+  if (length(line) > 0) {
+    fingers_log("=====")
+    fingers_log("parsing line: " line);
+    fingers_log("  ");
+  }
+
   while (match(line, finger_patterns)) {
     n_matches += 1;
-		n_matches_in_line += 1;
 
 		hint = HINTS[n_matches - 1]
     pos += RSTART;
@@ -142,25 +149,31 @@ BEGIN {
     col_pos = pos;
     line_match = substr(line, RSTART, RLENGTH);
 
-    if (n_matches_in_line > 1) {
-			# TODO does not work with more than 2 matches, corrected_col_pos needs to be accumulated
-			corrected_col_pos = col_pos + (n_matches > 10 ? hint_len_big : hint_len_small) + magic_number;
-    } else {
-      corrected_col_pos = col_pos;
-    }
+    col_pos = col_pos + col_pos_correction
+    fingers_log("POS: " pos)
+    fingers_log("col_pos: " col_pos)
 
     line_pos = NR;
 
-		pre_match = substr(output_line, 0, corrected_col_pos - 1)
-		hint_match = sprintf(highlight_format hint_format, line_match, hint)
+		pre_match = substr(output_line, 0, col_pos - 1);
+    hint_match = sprintf(highlight_format hint_format, line_match, hint);
+		post_match = substr(output_line, col_pos + RLENGTH + 1, length(line) - 1);
 
-		post_match = substr(output_line, corrected_col_pos + RLENGTH + 1, length(line) - 1)
+    output_line = pre_match hint_match post_match;
 
-    output_line = pre_match hint_match post_match
+    fingers_log("----")
+    fingers_log("original match: '" line_match "'")
+		fingers_log("pre_match: '" pre_match "'");
+		fingers_log("hint_match: '" hint_match "'");
+		fingers_log("post_match: '" post_match "'");
+		fingers_log("output_line: '" output_line "'");
+		fingers_log(" ");
 
     line = substr(line, RSTART + RLENGTH - 1);
 
-    printf hint ":" line_match "\n" | "cat 1>&3"
+    col_pos_correction += ((length(sprintf(highlight_format, line_match)) - length(line_match)) + length(sprintf(hint_format, hint)) + 1);
+
+    #printf hint ":" line_match "\n" | "cat 1>&3"
   }
 
   printf "\n%s", output_line

@@ -8,7 +8,7 @@ match_lookup_table=''
 
 function clear_screen() {
   local fingers_pane_id=$1
-  log "clearing screen for $fingers_pane_id"
+  #log "clearing screen for $fingers_pane_id"
   clear
   tmux clearhist -t $fingers_pane_id
 }
@@ -24,5 +24,6 @@ function show_hints_and_swap() {
   match_lookup_table=$(fingers_tmp)
   tmux swap-pane -s "$current_pane_id" -t "$fingers_pane_id"
   clear_screen "$fingers_pane_id"
-  cat | FINGER_PATTERNS=$PATTERNS awk -f $CURRENT_DIR/search.awk 3> $match_lookup_table | cut -c -$(tput cols)
+  #cat | FINGER_PATTERNS=$PATTERNS awk -f $CURRENT_DIR/search.awk 3> $match_lookup_table | cut -c -$(tput cols)
+  cat | FINGER_PATTERNS=$PATTERNS awk -f $CURRENT_DIR/search.awk 2> $CURRENT_DIR/../fingers.log | cut -c -$(tput cols)
 }
