@@ -6,8 +6,17 @@ function repeat_char(char, times) {
 	return output;
 }
 
+function strip_colors(input) {
+  input_bw = input;
+
+  gsub("\033\\[1;33m", "", input_bw);
+  gsub("\033\\[0m", "", input_bw);
+
+  return input_bw;
+}
+
 function fingers_log(msg) {
-  print msg | "cat 1>&2"
+  print strip_colors(msg) | "cat 1>&2"
 }
 
 BEGIN {
@@ -126,11 +135,11 @@ BEGIN {
   col_pos = 0;
 	col_pos_correction = 0;
 
-  hint_format = " [%s] "
-  #hint_format = " \033[1;33m[%s]\033[0m"
+  #hint_format = " [%s] "
+  hint_format = " \033[1;33m[%s]\033[0m "
 
-  highlight_format = "%s"
-  #highlight_format = "\033[1;33m%s\033[0m"
+  #highlight_format = "%s"
+  highlight_format = "\033[1;33m%s\033[0m"
 
 	output_line = line;
 
@@ -171,7 +180,7 @@ BEGIN {
 
     line = substr(line, RSTART + RLENGTH - 1);
 
-    col_pos_correction += ((length(sprintf(highlight_format, line_match)) - length(line_match)) + length(sprintf(hint_format, hint)) + 1);
+    col_pos_correction += ((length(strip_colors(sprintf(highlight_format, line_match))) - length(line_match)) + length(strip_colors(sprintf(hint_format, hint))) + 1);
 
     #printf hint ":" line_match "\n" | "cat 1>&3"
   }
