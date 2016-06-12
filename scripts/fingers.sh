@@ -134,6 +134,8 @@ while read -rsn1 char; do
 
   tmux display-message "$input"
 
+  log "result: $result"
+
   if [[ -z $result ]]; then
     continue
   fi

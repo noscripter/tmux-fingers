@@ -1,24 +1,3 @@
-function repeat_char(char, times) {
-	 for (i=0; i < times; i++) {
-    output = output char;
-	}
-
-	return output;
-}
-
-function strip_colors(input) {
-  input_bw = input;
-
-  gsub("\033\\[1;33m", "", input_bw);
-  gsub("\033\\[0m", "", input_bw);
-
-  return input_bw;
-}
-
-function fingers_log(msg) {
-  print strip_colors(msg) | "cat 1>&2"
-}
-
 BEGIN {
   n_matches = 0;
   line_pos = 0;
@@ -126,6 +105,9 @@ BEGIN {
   HINTS[99] = "aa"
 
   finger_patterns = ENVIRON["FINGER_PATTERNS"];
+
+  hint_format = "\033[1;33m[%s]\033[0m"
+  highlight_format = "\033[1;33m%s\033[0m "
 }
 
 {
@@ -134,25 +116,11 @@ BEGIN {
   pos = 0;
   col_pos = 0;
 	col_pos_correction = 0;
-  n_matches_this_line = 0;
-
-  #hint_format = " [%s] "
-  hint_format = " \033[1;33m[%s]\033[0m "
-
-  #highlight_format = "%s"
-  highlight_format = "\033[1;33m%s\033[0m"
 
 	output_line = line;
 
-  #if (length(line) > 0) {
-    #fingers_log("=====")
-    #fingers_log("parsing line: " line);
-    #fingers_log("  ");
-  #}
-
   while (match(line, finger_patterns)) {
     n_matches += 1;
-    n_matches_this_line += 1;
 
 		hint = HINTS[n_matches - 1]
     pos += RSTART;
@@ -161,8 +129,6 @@ BEGIN {
     line_match = substr(line, RSTART, RLENGTH);
 
     col_pos = col_pos + col_pos_correction
-    #fingers_log("POS: " pos)
-    #fingers_log("col_pos: " col_pos)
 
     line_pos = NR;
 
@@ -172,12 +138,11 @@ BEGIN {
 
     output_line = pre_match hint_match post_match;
 
-    #line = substr(line, RSTART + RLENGTH);
     line = post_match;
 
     col_pos_correction += (length(sprintf(highlight_format, line_match)) - 1 + length(sprintf(hint_format, hint)) - 1) + 1;
 
-    #printf hint ":" line_match "\n" | "cat 1>&3"
+    printf hint ":" line_match "\n" | "cat 1>&3"
   }
 
   printf "\n%s", output_line
