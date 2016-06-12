@@ -134,6 +134,7 @@ BEGIN {
   pos = 0;
   col_pos = 0;
 	col_pos_correction = 0;
+  n_matches_this_line = 0;
 
   #hint_format = " [%s] "
   hint_format = " \033[1;33m[%s]\033[0m "
@@ -143,14 +144,15 @@ BEGIN {
 
 	output_line = line;
 
-  if (length(line) > 0) {
-    fingers_log("=====")
-    fingers_log("parsing line: " line);
-    fingers_log("  ");
-  }
+  #if (length(line) > 0) {
+    #fingers_log("=====")
+    #fingers_log("parsing line: " line);
+    #fingers_log("  ");
+  #}
 
   while (match(line, finger_patterns)) {
     n_matches += 1;
+    n_matches_this_line += 1;
 
 		hint = HINTS[n_matches - 1]
     pos += RSTART;
@@ -159,28 +161,21 @@ BEGIN {
     line_match = substr(line, RSTART, RLENGTH);
 
     col_pos = col_pos + col_pos_correction
-    fingers_log("POS: " pos)
-    fingers_log("col_pos: " col_pos)
+    #fingers_log("POS: " pos)
+    #fingers_log("col_pos: " col_pos)
 
     line_pos = NR;
 
 		pre_match = substr(output_line, 0, col_pos - 1);
     hint_match = sprintf(highlight_format hint_format, line_match, hint);
-		post_match = substr(output_line, col_pos + RLENGTH + 1, length(line) - 1);
+		post_match = substr(output_line, col_pos + RLENGTH, length(line) - 1);
 
     output_line = pre_match hint_match post_match;
 
-    fingers_log("----")
-    fingers_log("original match: '" line_match "'")
-		fingers_log("pre_match: '" pre_match "'");
-		fingers_log("hint_match: '" hint_match "'");
-		fingers_log("post_match: '" post_match "'");
-		fingers_log("output_line: '" output_line "'");
-		fingers_log(" ");
+    #line = substr(line, RSTART + RLENGTH);
+    line = post_match;
 
-    line = substr(line, RSTART + RLENGTH - 1);
-
-    col_pos_correction += ((length(strip_colors(sprintf(highlight_format, line_match))) - length(line_match)) + length(strip_colors(sprintf(hint_format, hint))) + 1);
+    col_pos_correction += (length(sprintf(highlight_format, line_match)) - 1 + length(sprintf(hint_format, hint)) - 1) + 1;
 
     #printf hint ":" line_match "\n" | "cat 1>&3"
   }
