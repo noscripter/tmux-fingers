@@ -2,6 +2,10 @@
 
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+source $CURRENT_DIR/debug.sh
+
+log "sourcing config"
+
 # TODO empty patterns are invalid
 function check_pattern() {
   echo "beep beep" | grep -e "$1" 2> /dev/null
@@ -16,15 +20,15 @@ function check_pattern() {
 source "$CURRENT_DIR/utils.sh"
 
 PATTERNS_LIST=(
-"((^|^\.|[[:space:]]|[[:space:]]\.|[[:space:]]\.\.|^\.\.)[[:alnum:]~_-]*/[][[:alnum:]_.#$%&+=/@-]*)"
-"([[:digit:]]{4,})"
-"([0-9a-f]{7}|[0-9a-f]{40})"
-"((https?://|git@|git://|ssh://|ftp://|file:///)[[:alnum:]?=%/_.:,;~@!#$&()*+-]*)"
-"([[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3})"
+"(^|^\.|[[:space:]]|[[:space:]]\.|[[:space:]]\.\.|^\.\.)[[:alnum:]~_-]*/[][[:alnum:]_.#$%&+=/@-]*"
+"[[:digit:]]{4,}"
+"[0-9a-f]{7}|[0-9a-f]{40}"
+"(https?://|git@|git://|ssh://|ftp://|file:///)[[:alnum:]?=%/_.:,;~@!#$&()*+-]*"
+"[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}"
 )
 
 IFS=$'\n'
-USER_DEFINED_PATTERNS=($(tmux show-options -g | grep ^@fingers-pattern | sed 's/^@fingers-pattern-[0-9] "\(.*\)"$/(\1)/'))
+USER_DEFINED_PATTERNS=($(tmux show-options -g | grep ^@fingers-pattern | sed 's/^@fingers-pattern-[0-9] "\(.*\)"$/\1/'))
 unset IFS
 
 PATTERNS_LIST=("${PATTERNS_LIST[@]}" "${USER_DEFINED_PATTERNS[@]}")
@@ -41,5 +45,16 @@ for pattern in "${PATTERNS_LIST[@]}" ; do
   i=$((i + 1))
 done
 
-PATTERNS=$(array_join "|" "${PATTERNS_LIST[@]}")
+function get_pattern_list() {
+  for pattern in "${PATTERNS_LIST[@]}" ; do
+    printf "%s\n" $pattern
+  done
+}
+
+PATTERNS="($(array_join ")|(" "${PATTERNS_LIST[@]}"))"
+PATTERNS_AWK=$(array_join "!!!finger_patterns_separator!!!" "${PATTERNS_LIST[@]}")
+
+#log "patterns $PATTERNS"
+#log "patterns awk $PATTERNS_AWK"
 export PATTERNS
+export PATTERNS_AWK

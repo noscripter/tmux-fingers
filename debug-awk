@@ -1,0 +1,7 @@
+#!/bin/env bash
+source scripts/config.sh
+
+echo $PATTERNS
+echo $PATTERNS_AWK
+
+FINGER_PATTERNS=$PATTERNS FINGER_PATTERNS_AWK=$PATTERNS_AWK gawk --debug -f ./scripts/search.awk $1
