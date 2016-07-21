@@ -1,12 +1,7 @@
 #!/usr/bin/env bash
 
-CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-source $CURRENT_DIR/debug.sh
-
 function array_join() {
-  # Good ol' stack overflow
-  # http://stackoverflow.com/questions/1527049/bash-join-elements-of-an-array
-  local d=$1; shift; echo -n "$1"; shift; printf "%s" "${@/#/$d}";
+  local IFS="$1"; shift; echo "$*";
 }
 
 function ord() {

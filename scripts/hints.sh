@@ -20,7 +20,7 @@ function lookup_match() {
 function show_hints_and_swap() {
   current_pane_id=$1
   fingers_pane_id=$2
-  clear_screen "$fingers_pane_id"
-  cat | FINGER_PATTERNS=$PATTERNS FINGER_PATTERNS_AWK=$PATTERNS_AWK gawk -f $CURRENT_DIR/search.awk 3> $match_lookup_table 2> $CURRENT_DIR/../fingers.log | cut -c -$(tput cols)
   tmux swap-pane -s "$current_pane_id" -t "$fingers_pane_id"
+  clear_screen "$fingers_pane_id"
+  cat | FINGER_PATTERNS=$PATTERNS awk -f $CURRENT_DIR/search.awk 3> $match_lookup_table | cut -c -$(tput cols)
 }

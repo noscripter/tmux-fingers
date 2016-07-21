@@ -1,7 +1,3 @@
-function debug_log (msg) {
-  printf "%s\n", msg | "cat 1>&2"
-}
-
 BEGIN {
   n_matches = 0;
   line_pos = 0;
@@ -110,13 +106,12 @@ BEGIN {
 
   finger_patterns = ENVIRON["FINGER_PATTERNS"];
 
-  pattern_list_count = split(ENVIRON["FINGER_PATTERNS_AWK"], pattern_list, "!!!finger_patterns_separator!!!");
-
   hint_format = "\033[1;33m[%s]\033[0m"
   highlight_format = "\033[1;33m%s\033[0m "
 }
 
 {
+
   line = $0;
   pos = 0;
   col_pos = 0;
@@ -125,35 +120,13 @@ BEGIN {
 	output_line = line;
 
   while (match(line, finger_patterns)) {
-    MATCH_RSTART = RSTART;
-    MATCH_NR = NR;
-    MATCH_RLENGTH = RLENGTH;
-
-    for (i = 1; i <= pattern_list_count; ++i) {
-      pattern = pattern_list[i];
-      #debug_log(pattern);
-
-      if (pattern ~ /^\^\(---/ && line ~ pattern) {
-        # TODO gawk dependency
-        debug_log(pattern);
-        result = gensub(".*" pattern_list[i] ".*", "\\1", "g", line);
-        debug_log("result 1 " result);
-
-        result = gensub(".*" pattern_list[i] ".*", "\\2", "g", line);
-        debug_log("result 2 " result);
-
-        result = gensub(".*" pattern_list[i] ".*", "\\3", "g", line);
-        debug_log("result 3 " result);
-      }
-    }
-
     n_matches += 1;
 
 		hint = HINTS[n_matches - 1]
-    pos += MATCH_RSTART;
+    pos += RSTART;
 
     col_pos = pos;
-    line_match = substr(line, MATCH_RSTART, MATCH_RLENGTH);
+    line_match = substr(line, RSTART, RLENGTH);
 
     col_pos = col_pos + col_pos_correction
 
@@ -161,7 +134,7 @@ BEGIN {
 
 		pre_match = substr(output_line, 0, col_pos - 1);
     hint_match = sprintf(highlight_format hint_format, line_match, hint);
-		post_match = substr(output_line, col_pos + MATCH_RLENGTH, length(line) - 1);
+		post_match = substr(output_line, col_pos + RLENGTH, length(line) - 1);
 
     output_line = pre_match hint_match post_match;
 
@@ -169,7 +142,7 @@ BEGIN {
 
     col_pos_correction += (length(sprintf(highlight_format, line_match)) - 1 + length(sprintf(hint_format, hint)) - 1) + 1;
 
-    #printf hint ":" line_match "\n" | "cat 1>&3"
+    printf hint ":" line_match "\n" | "cat 1>&3"
   }
 
   printf "\n%s", output_line

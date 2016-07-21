@@ -102,11 +102,8 @@ function hide_cursor() {
 
 trap "handle_exit" EXIT
 
-start_ms=$(current_ms)
 show_hints_and_swap $current_pane_id $fingers_pane_id
-end_ms=$(current_ms)
-ellapsed_ms=$((end_ms - start_ms))
-log "ellapsed $ellapsed_ms"
+#log "end $(current_ms)"
 
 input=''
 
