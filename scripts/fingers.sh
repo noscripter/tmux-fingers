@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-LOG_PATH=$CURRENT_DIR/../fingers.log
+source $CURRENT_DIR/lib/require.sh
 
-source $CURRENT_DIR/config.sh
-source $CURRENT_DIR/actions.sh
-source $CURRENT_DIR/debug.sh
-
-source $CURRENT_DIR/hints.sh
-source $CURRENT_DIR/utils.sh
+require "./utils.sh"
+require "./config.sh"
+require "./actions.sh"
+require "./debug.sh"
+require "./hints.sh"
+require "./utils.sh"
 
 FINGERS_COPY_COMMAND=$(tmux show-option -gqv @fingers-copy-command)
 
