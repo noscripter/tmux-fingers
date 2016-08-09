@@ -111,7 +111,6 @@ BEGIN {
 }
 
 {
-
   line = $0;
   pos = 0;
   col_pos = 0;

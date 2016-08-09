@@ -18,10 +18,6 @@ tmp_path=$3
 
 BACKSPACE=$'\177'
 
-function has_capitals() {
-  echo "$1" | grep -c "[A-Z]"
-}
-
 function is_pane_zoomed() {
   local pane_id=$1
 
@@ -35,11 +31,6 @@ function zoom_pane() {
 
   tmux resize-pane -Z -t "$pane_id"
 }
-
-print_hints
-pane_was_zoomed=$(is_pane_zoomed "$current_pane_id")
-tmux swap-pane -s "$current_pane_id" -t "$fingers_pane_id"
-[[ $pane_was_zoomed == "1" ]] && zoom_pane "$fingers_pane_id"
 
 function handle_exit() {
   tmux swap-pane -s "$current_pane_id" -t "$fingers_pane_id"
@@ -66,20 +57,6 @@ function copy_result() {
   fi
 }
 
-function sanitize_input() {
-  local input=$(echo "$(str_to_ascii "$1")" | sed -r "s/ 27 91 [0-9]{2}//")
-  local sanitized=''
-
-  OLDIFS=$IFS
-  IFS=' '
-  for char_code in $input; do
-    sanitized="${sanitized}$(chr "$char_code")"
-  done
-  IFS=$OLDIFS
-
-  echo "$sanitized"
-}
-
 function is_valid_input() {
   local input=$1
   local is_valid=1
@@ -102,11 +79,12 @@ function hide_cursor() {
 
 trap "handle_exit" EXIT
 
+pane_was_zoomed=$(is_pane_zoomed "$current_pane_id")
 show_hints_and_swap $current_pane_id $fingers_pane_id
-#log "end $(current_ms)"
+[[ $pane_was_zoomed == "1" ]] && zoom_pane "$fingers_pane_id"
 
+hide_cursor
 input=''
-
 while read -rsn1 char; do
   # Escape sequence, flush input
   if [[ "$char" == $'\x1b' ]]; then
