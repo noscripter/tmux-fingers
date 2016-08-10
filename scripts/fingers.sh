@@ -74,7 +74,7 @@ function is_valid_input() {
 }
 
 function hide_cursor() {
-  echo $(tput civis)
+  echo -n $(tput civis)
 }
 
 trap "handle_exit" EXIT
