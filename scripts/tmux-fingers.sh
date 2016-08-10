@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
-source $CURRENT_DIR/./utils.sh
+source $CURRENT_DIR/utils.sh
 
 function init_fingers_pane() {
   local pane_id=$(tmux new-window -F "#{pane_id}" -P -d -n "!fingers")
@@ -39,7 +38,7 @@ function prompt_fingers_for_pane() {
   wait
 
   capture_pane "$current_pane_id" "$tmp_path"
-  pane_exec "$fingers_pane_id" "cat $tmp_path | $CURRENT_DIR/fingers.sh \"$current_pane_id\" \"$fingers_pane_id\" $tmp_path 2> $CURRENT_DIR/error.log"
+  pane_exec "$fingers_pane_id" "cat $tmp_path | $CURRENT_DIR/fingers.sh \"$current_pane_id\" \"$fingers_pane_id\" $tmp_path"
 
   echo $fingers_pane_id
 }

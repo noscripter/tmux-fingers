@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-require "./utils.sh"
+CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # TODO empty patterns are invalid
 function check_pattern() {
@@ -12,6 +12,8 @@ function check_pattern() {
     echo 1
   fi
 }
+
+source "$CURRENT_DIR/utils.sh"
 
 PATTERNS_LIST=(
 "((^|^\.|[[:space:]]|[[:space:]]\.|[[:space:]]\.\.|^\.\.)[[:alnum:]~_-]*/[][[:alnum:]_.#$%&+=/@-]*)"

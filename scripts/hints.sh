@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-require "./utils.sh"
+CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source $CURRENT_DIR/utils.sh
 
 match_lookup_table=$(fingers_tmp)
 
