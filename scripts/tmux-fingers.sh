@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-source $CURRENT_DIR/lib/require.sh
 
-require "./utils.sh"
+source $CURRENT_DIR/./utils.sh
 
 function init_fingers_pane() {
   local pane_id=$(tmux new-window -F "#{pane_id}" -P -d -n "!fingers")

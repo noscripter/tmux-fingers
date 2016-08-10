@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+#TODO split all this crap in lib/ folder
+
 function array_join() {
   local IFS="$1"; shift; echo "$*";
 }

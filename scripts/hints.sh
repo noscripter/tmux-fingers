@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-require "./debug.sh"
 require "./utils.sh"
 
 match_lookup_table=$(fingers_tmp)

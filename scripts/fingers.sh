@@ -6,7 +6,6 @@ source $CURRENT_DIR/lib/require.sh
 require "./utils.sh"
 require "./config.sh"
 require "./actions.sh"
-require "./debug.sh"
 require "./hints.sh"
 require "./utils.sh"
 
@@ -111,8 +110,6 @@ while read -rsn1 char; do
   result=$(lookup_match "$input")
 
   tmux display-message "$input"
-
-  log "result: $result"
 
   if [[ -z $result ]]; then
     continue
