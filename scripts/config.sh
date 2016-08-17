@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source $CURRENT_DIR/utils.sh
 
 # TODO empty patterns are invalid
 function check_pattern() {
@@ -13,17 +14,32 @@ function check_pattern() {
   fi
 }
 
+HAS_GAWK=$(which gawk &> /dev/null && echo $(($? == 0)))
+
+function supports_intervals_in_awk() {
+  echo "wtfwtfwtf" | __awk__ "/(wtf){3}/ { print \"wtf\" }" | grep -c wtf
+}
+
 source "$CURRENT_DIR/utils.sh"
 source "$CURRENT_DIR/debug.sh"
 
-PATTERNS_LIST=(
-"((^|^\.|[[:space:]]|[[:space:]]\.|[[:space:]]\.\.|^\.\.)[[:alnum:]~_-]*/[][[:alnum:]_.#$%&+=/@-]*)"
-"([[:digit:]]{4,})"
-"([0-9a-f]{7}|[0-9a-f]{40})"
-"((https?://|git@|git://|ssh://|ftp://|file:///)[[:alnum:]?=%/_.:,;~@!#$&()*+-]*)"
-"([[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3})"
-"(wtf){47}"
-)
+if [[ supports_intervals_in_awk == "1" ]]; then
+  PATTERNS_LIST=(
+  "((^|^\.|[[:space:]]|[[:space:]]\.|[[:space:]]\.\.|^\.\.)[[:alnum:]~_-]*/[][[:alnum:]_.#$%&+=/@-]*)"
+  "([[:digit:]]{4,})"
+  "([0-9a-f]{7}|[0-9a-f]{40})"
+  "((https?://|git@|git://|ssh://|ftp://|file:///)[[:alnum:]?=%/_.:,;~@!#$&()*+-]*)"
+  "([[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3})"
+  )
+else
+  PATTERNS_LIST=(
+  "((^|^\.|[[:space:]]|[[:space:]]\.|[[:space:]]\.\.|^\.\.)[[:alnum:]~_-]*/[][[:alnum:]_.#$%&+=/@-]*)"
+  "([[:digit:]][[:digit:]][[:digit:]][[:digit:]]([[:digit:]])*)"
+  "([0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]|[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f])"
+  "((https?://|git@|git://|ssh://|ftp://|file:///)[[:alnum:]?=%/_.:,;~@!#$&()*+-]*)"
+  "([[:digit:]][[:digit:]]?[[:digit:]]?\.[[:digit:]][[:digit:]]?[[:digit:]]?\.[[:digit:]][[:digit:]]?[[:digit:]]?\.[[:digit:]][[:digit:]]?[[:digit:]]?)"
+  )
+fi
 
 IFS=$'\n'
 USER_DEFINED_PATTERNS=($(tmux show-options -g | grep ^@fingers-pattern | sed 's/^@fingers-pattern-[0-9] "\(.*\)"$/(\1)/'))
@@ -38,10 +54,10 @@ for pattern in "${PATTERNS_LIST[@]}" ; do
 
   log "$pattern"
 
-  #if [[ $is_pattern_good == 0 ]]; then
-    #display_message "fingers-error: bad user defined pattern $pattern" 5000
-    #PATTERNS_LIST[$i]="nope{4000}"
-  #fi
+  if [[ $is_pattern_good == 0 ]]; then
+    display_message "fingers-error: bad user defined pattern $pattern" 5000
+    PATTERNS_LIST[$i]="nope{4000}"
+  fi
 
   i=$((i + 1))
 done

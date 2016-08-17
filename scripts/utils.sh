@@ -86,3 +86,11 @@ function fingers_tmp() {
   chmod 600 "$tmp_path"
   echo "$tmp_path"
 }
+
+function __awk__() {
+  if hash gawk 2>/dev/null; then
+    gawk "$@"
+  else
+    awk "$@"
+  fi
+}
