@@ -21,7 +21,6 @@ function supports_intervals_in_awk() {
 }
 
 source "$CURRENT_DIR/utils.sh"
-source "$CURRENT_DIR/debug.sh"
 
 if [[ supports_intervals_in_awk == "1" ]]; then
   PATTERNS_LIST=(
@@ -49,10 +48,7 @@ PATTERNS_LIST=("${PATTERNS_LIST[@]}" "${USER_DEFINED_PATTERNS[@]}")
 
 i=0
 for pattern in "${PATTERNS_LIST[@]}" ; do
-  pattern=$(echo "$pattern" | awk -f "$CURRENT_DIR/normalize-pattern.awk")
   is_pattern_good=$(check_pattern "$pattern")
-
-  log "$pattern"
 
   if [[ $is_pattern_good == 0 ]]; then
     display_message "fingers-error: bad user defined pattern $pattern" 5000
